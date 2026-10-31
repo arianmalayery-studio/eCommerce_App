@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Marketplace Central{% endblock %}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; line-height: 1.6; background-color: #f8fafc; color: #1e293b; }
+        .navbar { background-color: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 14px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { font-size: 1.25rem; font-weight: bold; text-decoration: none; color: #0f172a; }
+        .nav-links { display: flex; align-items: center; gap: 12px; }
+        .user-tag { font-size: 0.9rem; padding: 4px 10px; border-radius: 9999px; font-weight: bold; }
+        .role-vendor { background-color: #ede9fe; color: #6d28d9; }
+        .role-buyer { background-color: #e0f2fe; color: #0369a1; }
+        .btn { padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; font-size: 0.9rem; }
+        .btn-blue { background-color: #2563eb; color: white; }
+        .btn-amber { background-color: #f59e0b; color: white; }
+        .btn-slate { background-color: #0f172a; color: white; }
+        .btn-red { background-color: #dc2626; color: white; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="{% url 'eCommerce:products_list' %}" class="nav-brand">🏪 Marketplace Central</a>
+        <div class="nav-links">
+            {% if request.user.is_authenticated %}
+                <span>👤 <strong>{{ request.user.username }}</strong></span>
+                {% if is_vendor %}
+                    <span class="user-tag role-vendor">🏬 Vendor</span>
+                    <a href="{% url 'eCommerce:vendor_dashboard' %}" class="btn btn-slate">Dashboard</a>
+                {% else %}
+                    <span class="user-tag role-buyer">🛍️ Buyer</span>
+                    <a href="{% url 'eCommerce:main_cart_page' %}" class="btn btn-amber">🛒 Cart</a>
+                {% endif %}
+                <form method="POST" action="{% url 'grabsomore:logout' %}" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-red">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'grabsomore:login' %}" class="btn btn-blue">Login</a>
+                <a href="{% url 'grabsomore:register' %}" class="btn btn-slate">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

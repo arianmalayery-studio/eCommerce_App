@@ -1,0 +1,29 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}{{ action }} Store | GrabSoMore{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'eCommerce:vendor_dashboard' %}" class="btn btn-slate" style="font-size: 0.85rem;">⬅️ Back to Dashboard</a>
+</div>
+
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <h1 style="margin: 0 0 10px 0; font-size: 1.5rem; color: #0f172a;">🏬 {{ action }} Store</h1>
+    <p style="color: #64748b; margin: 0 0 20px 0;">Define the storefront details for listing your products.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 16px;">
+            <label for="name" style="display: block; font-weight: bold; margin-bottom: 6px;">Store Name:</label>
+            <input type="text" id="name" name="name" value="{{ store.name|default:'' }}" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label for="description" style="display: block; font-weight: bold; margin-bottom: 6px;">Description:</label>
+            <textarea id="description" name="description" rows="4" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">{{ store.description|default:'' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-blue" style="width: 100%; padding: 10px; font-size: 1rem;">💾 Save Store</button>
+    </form>
+</div>
+{% endblock %}

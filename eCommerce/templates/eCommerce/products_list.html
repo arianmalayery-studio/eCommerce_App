@@ -1,0 +1,38 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}Product Catalog | GrabSoMore{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+    <h1 style="margin: 0;">🛍️ Product Catalog</h1>
+</div>
+
+{% if products %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+        {% for product in products %}
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h3 style="margin-top: 0;">📦 {{ product.name }}</h3>
+                    <p style="color: #64748b; margin-top: -6px; font-size: 0.9rem;">
+                        🏬 Store: <strong>{% if product.store %}{{ product.store.name }}{% else %}General Store{% endif %}</strong>
+                    </p>
+                    <p style="font-size: 1.3rem; color: #16a34a; font-weight: bold; margin: 8px 0;">🏷️ ${{ product.price }}</p>
+                    <p style="font-size: 0.85rem; color: #475569;">📊 In Stock: {{ product.stock }} units</p>
+                    <p style="font-size: 0.9rem; color: #64748b;">{{ product.description|truncatewords:12 }}</p>
+                </div>
+                <div style="margin-top: 15px;">
+                    <a href="{% url 'eCommerce:product_page' product.id %}" class="btn btn-blue" style="width: 100%; text-align: center; box-sizing: border-box;">🔍 View Details</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 40px;">
+        <h3>📦 No Products Available</h3>
+        <p style="color: #64748b;">There are currently no items listed in any store.</p>
+        {% if is_vendor %}
+            <a href="{% url 'eCommerce:vendor_dashboard' %}" class="btn btn-slate">Go to Dashboard to Add Items</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

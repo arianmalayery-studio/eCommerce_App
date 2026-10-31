@@ -1,0 +1,122 @@
+ECOMMERCE WEB APPLICATION — CRUD MATRIX
+================================================================================
+
+The table below documents which CRUD (Create, Read, Update, Delete) operations
+are supported for each core entity/model in the eCommerce application.
+
++----------+--------+------+--------+--------+
+| Entity   | Create | Read | Update | Delete |
++----------+--------+------+--------+--------+
+| Store    |   X    |  X   |   X    |   X    |
++----------+--------+------+--------+--------+
+| Product  |   X    |  X   |   X    |   X    |
++----------+--------+------+--------+--------+
+| Review   |   X    |  X   |   X    |   X    |
++----------+--------+------+--------+--------+
+
+
+1. STORE ENTITY
+--------------------------------------------------------------------------------
+Create (C): Registering a new vendor storefront.
+            - Web UI: Vendor navigates to vendor dashboard and submits the store
+              creation form (`eCommerce.views.create_store`).
+            - REST API: `POST /ecommerce/api/stores/` with Basic Authentication
+              and store payload (`name`, `description`). Implemented in
+              `eCommerce.api_views.StoreListCreateAPIView`.
+            - Database: Inserts a new record into `ecommerce_store` mapped to
+              the authenticated vendor user ID.
+
+Read (R):   Browsing and retrieving storefront details.
+            - Web UI: Users view list of stores or vendor storefront page
+              (`eCommerce.views.store_detail`).
+            - REST API: `GET /ecommerce/api/stores/` (lists all active stores)
+              and `GET /ecommerce/api/vendors/<vendor_id>/stores/` (lists stores
+              by vendor). Implemented in `StoreListCreateAPIView` and
+              `VendorStoreListAPIView`.
+            - Database: Performs `SELECT * FROM ecommerce_store` (or filters by
+              `vendor_id`).
+
+Update (U): Modifying storefront profile or metadata (as shown on page 32 of
+            the course module).
+            - Web UI: Store owners update name, banner, or description via
+              `eCommerce.views.change_store_information`.
+            - REST API: `PUT/PATCH /ecommerce/api/stores/<store_id>/`
+              with owner authentication.
+            - Database: Updates matching record in `ecommerce_store` after
+              verifying `store.vendor == request.user`.
+
+Delete (D): Removing a store and retiring its associated catalog.
+            - Web UI: Vendor deletes storefront from vendor dashboard.
+            - REST API: `DELETE /ecommerce/api/stores/<store_id>/` with owner
+              credentials.
+            - Database: Removes record from `ecommerce_store`, triggering
+              cascading cleanup of associated inventory where configured.
+
+
+2. PRODUCT ENTITY
+--------------------------------------------------------------------------------
+Create (C): Adding a new product item under a specific store.
+            - Web UI: Vendor adds product through the storefront inventory form
+              (`eCommerce.views.add_product`).
+            - REST API: `POST /ecommerce/api/stores/<store_id>/products/` with
+              owner Basic Auth (`name`, `description`, `price`, `stock`).
+              Implemented in `ProductListCreateAPIView`.
+            - Database: Inserts record into `ecommerce_product` linked via
+              foreign key to `ecommerce_store`.
+
+Read (R):   Viewing product catalog listings and item details.
+            - Web UI: Buyers browse products catalog and detail pages
+              (`eCommerce.views.view_product_page`).
+            - REST API: `GET /ecommerce/api/stores/<store_id>/products/` (public
+              listing of products belonging to a store).
+            - Database: Executes `SELECT * FROM ecommerce_product WHERE
+              store_id = <store_id>`.
+
+Update (U): Editing product attributes, adjusting inventory stock, or
+            updating prices.
+            - Web UI: Vendor updates product prices via
+              `eCommerce.views.change_product_price`.
+            - REST API: `PUT/PATCH /ecommerce/api/products/<product_id>/` with
+              vendor authentication.
+            - Database: Executes `UPDATE ecommerce_product SET price = ... WHERE
+              id = <product_id>`.
+
+Delete (D): Removing a discontinued product from inventory.
+            - Web UI: Vendor removes product from store management panel.
+            - REST API: `DELETE /ecommerce/api/products/<product_id>/` with
+              vendor ownership validation.
+            - Database: Deletes matching record from `ecommerce_product`.
+
+
+3. REVIEW ENTITY
+--------------------------------------------------------------------------------
+Create (C): Submitting feedback and ratings for a product.
+            - Web UI: Authenticated buyers submit ratings and comments on
+              product pages (`eCommerce.views.add_review`). Checks past order
+              items to flag review as verified vs. unverified.
+            - REST API: `POST /ecommerce/api/products/<product_id>/reviews/`
+              with Basic Auth (`rating`, `comment`).
+            - Database: Inserts record into `ecommerce_review` linking `user_id`,
+              `product_id`, rating, and purchase verification flag.
+
+Read (R):   Inspecting customer feedback and store ratings.
+            - Web UI: Public users view customer reviews on product listings;
+              vendors view feedback on their dashboard.
+            - REST API: `GET /ecommerce/api/stores/<store_id>/reviews/` (allows
+              vendors to retrieve reviews across their products).
+            - Database: Executes `SELECT * FROM ecommerce_review WHERE
+              product_id IN (...)`.
+
+Update (U): Modifying an existing review submission.
+            - Web UI: Review author updates their rating score or comment text.
+            - REST API: `PUT/PATCH /ecommerce/api/reviews/<review_id>/` with
+              author authentication.
+            - Database: Updates comment and rating fields in `ecommerce_review`
+              after validating `review.user == request.user`.
+
+Delete (D): Removing an inappropriate or retracted review.
+            - Web UI: Review author or system administrator removes the review.
+            - REST API: `DELETE /ecommerce/api/reviews/<review_id>/` with
+              author or superuser authorization.
+            - Database: Deletes record from `ecommerce_review`.
+================================================================================

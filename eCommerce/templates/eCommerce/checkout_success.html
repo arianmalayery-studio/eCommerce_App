@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Complete</title>
+</head>
+<body>
+    <h1>Order #{{ order.id }} Confirmed</h1>
+    <p>A copy of your invoice has been sent to {{ user.email }}.</p>
+    <pre style="background: #f4f4f4; padding: 15px; border: 1px solid #ddd;">{{ invoice }}</pre>
+    <a href="{% url 'eCommerce:products_list' %}">Continue Shopping</a>
+</body>
+</html>

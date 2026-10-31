@@ -1,0 +1,116 @@
+--
+
+#### 2. `Planning/sequence_diagram.txt`
+
+```text
+====================================================================================================
+PROGRAM SEQUENCE DIAGRAM (FULL CRUD & MODULE PAGE 32 ARCHITECTURE)
+====================================================================================================
+
+   o                 +-----------------+      +-----------------+      +-----------------+
+  /|\  Actor         | Web Application |      |  Authentication |      |     Database    |
+  / \                +-----------------+      +-----------------+      +-----------------+
+   |                          |                        |                        |
+   |                          |                        |                        |
+=== 1. USER LOGIN LIFELINE ===|                        |                        |
+   |                          |                        |                        |
+   |--- Login --------------->|                        |                        |
+   |                          |--- Request auth ------>|                        |
+   |                          |                        |--- Retrieve auth ----->|
+   |                          |                        |<-- Return auth data ---|
+   |                          |<-- Auth success -------|                        |
+   |<-- Redirect to home -----|                        |                        |
+   |    (session attached)    |<-- Auth failed --------|                        |
+   |<-- Redirect login page --|                        |                        |
+   |    (error message)       |                        |                        |
+   |                          |                        |                        |
+=== 2. STORE ENTITY (CRUD) ===|                        |                        |
+   |                          |                        |                        |
+   |-- [C] Create store ----->|                        |                        |
+   |                          |--- Request perms ----->|                        |
+   |                          |<-- Perms granted ------|                        |
+   |                          |--- Insert store ------------------------------->|
+   |                          |<-- Store created -------------------------------|
+   |<-- Redirect dashboard ---|                        |                        |
+   |                          |                        |                        |
+   |-- [R] Browse stores ---->|                        |                        |
+   |                          |--- Select stores ------------------------------>|
+   |                          |<-- Return stores -------------------------------|
+   |<-- Render store list ----|                        |                        |
+   |                          |                        |                        |
+   |-- [U] Change store info >|                        |                        |
+   |                          |--- Request perms ----->|                        |
+   |                          |    authentication      |--- Retrieve auth ----->|
+   |                          |                        |<-- Return auth data ---|
+   |                          |<-- Auth success -------|                        |
+   |                          |--- Request update on specified store data ----->|
+   |                          |<-- Return success message ----------------------|
+   |<-- Redirect success page |                        |                        |
+   |                          |<-- Return error message ------------------------|
+   |<-- Return error page ----|                        |                        |
+   |                          |<-- Auth unsuccessful --|                        |
+   |<-- Redirect error page --|                        |                        |
+   |                          |                        |                        |
+   |-- [D] Delete store ----->|                        |                        |
+   |                          |--- Check ownership --->|                        |
+   |                          |<-- Ownership confirmed |                        |
+   |                          |--- Delete store record ------------------------>|
+   |                          |<-- Store deleted -------------------------------|
+   |<-- Redirect dashboard ---|                        |                        |
+   |                          |                        |                        |
+=== 3. PRODUCT ENTITY (CRUD) =|                        |                        |
+   |                          |                        |                        |
+   |-- [C] Add product ------>|                        |                        |
+   |                          |--- Check vendor perms >|                        |
+   |                          |<-- Perms verified -----|                        |
+   |                          |--- Insert product ----------------------------->|
+   |                          |<-- Product saved -------------------------------|
+   |<-- Redirect inventory ---|                        |                        |
+   |                          |                        |                        |
+   |-- [R] View product ----->|                        |                        |
+   |                          |--- Select product ----------------------------->|
+   |                          |<-- Return product data -------------------------|
+   |<-- Render product page --|                        |                        |
+   |                          |                        |                        |
+   |-- [U] Update price ----->|                        |                        |
+   |                          |--- Verify store owner >|                        |
+   |                          |<-- Owner confirmed ----|                        |
+   |                          |--- Update product price ----------------------->|
+   |                          |<-- Price updated -------------------------------|
+   |<-- Render updated page --|                        |                        |
+   |                          |                        |                        |
+   |-- [D] Remove product --->|                        |                        |
+   |                          |--- Check delete perms >|                        |
+   |                          |<-- Perms verified -----|                        |
+   |                          |--- Delete product record ---------------------->|
+   |                          |<-- Product deleted -----------------------------|
+   |<-- Refresh inventory ----|                        |                        |
+   |                          |                        |                        |
+=== 4. REVIEW ENTITY (CRUD) ==|                        |                        |
+   |                          |                        |                        |
+   |-- [C] Submit review ---->|                        |                        |
+   |                          |--- Check login status >|                        |
+   |                          |<-- User authenticated -|                        |
+   |                          |--- Check purchase & insert review (verified) -->|
+   |                          |<-- Review saved --------------------------------|
+   |<-- Render review list ---|                        |                        |
+   |                          |                        |                        |
+   |-- [R] Read reviews ----->|                        |                        |
+   |                          |--- Select reviews for store/product ----------->|
+   |                          |<-- Return reviews list -------------------------|
+   |<-- Render product page --|                        |                        |
+   |                          |                        |                        |
+   |-- [U] Edit review ------>|                        |                        |
+   |                          |--- Verify review author|                        |
+   |                          |<-- Author verified ----|                        |
+   |                          |--- Update review comment/rating --------------->|
+   |                          |<-- Review updated ------------------------------|
+   |<-- Render updated review |                        |                        |
+   |                          |                        |                        |
+   |-- [D] Delete review ---->|                        |                        |
+   |                          |--- Verify author/admin |                        |
+   |                          |<-- Perms confirmed ----|                        |
+   |                          |--- Delete review record ----------------------->|
+   |                          |<-- Review deleted ------------------------------|
+   |<-- Refresh review list --|                        |                        |
+====================================================================================================

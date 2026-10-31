@@ -1,0 +1,18 @@
+{% extends "eCommerce/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Posts from Reddit (r/Python)</h1>
+    <ul class="list-group">
+        {% for post in posts %}
+        <li class="list-group-item mb-2">
+            <h5 class="mb-1">{{ post.title }}</h5>
+            <small class="text-muted">Posted by: {{ post.author }}</small><br>
+            <a href="{{ post.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">View Post</a>
+        </li>
+        {% empty %}
+        <li class="list-group-item">No posts available or failed to fetch.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
