@@ -7,7 +7,9 @@ from django.core.mail import EmailMessage
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
+from .functions.reddit import get_reddit_posts
 from .models import Order, OrderItem, Product, Review, Store
+from .serializers import ProductSerializer, ReviewSerializer, StoreSerializer
 
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication
@@ -19,9 +21,6 @@ from rest_framework.decorators import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import ProductSerializer, ReviewSerializer, StoreSerializer
-
-from .functions.reddit import get_reddit_posts
 
 def check_is_vendor(user):
     """Check if the authenticated user has Vendor or Superuser status."""
@@ -31,8 +30,31 @@ def check_is_vendor(user):
 
 
 # ==============================================================================
-# CATALOG & CART VIEWS
+# CATALOG & STORE BROWSING (BUYER & GENERAL)
 # ==============================================================================
+
+
+def stores_list(request):
+    """Entry point: list all stores so buyers can browse stores first."""
+    stores = Store.objects.all().select_related("vendor")
+    is_vendor = check_is_vendor(request.user)
+    return render(
+        request,
+        "eCommerce/stores_list.html",
+        {"stores": stores, "is_vendor": is_vendor},
+    )
+
+
+def store_products(request, store_id):
+    """Display only products belonging to the selected store."""
+    store = get_object_or_404(Store, id=store_id)
+    products = Product.objects.filter(store=store)
+    is_vendor = check_is_vendor(request.user)
+    return render(
+        request,
+        "eCommerce/store_products.html",
+        {"store": store, "products": products, "is_vendor": is_vendor},
+    )
 
 
 def products_list(request):
@@ -192,7 +214,7 @@ def checkout(request):
             )
             invoice_lines.append(
                 f"- {product.name} (x{qty}) @ "
-                f"${product.price} = ${line_total}"
+                f"${product.price} =${line_total}"
             )
 
     order.total_amount = total
@@ -221,20 +243,38 @@ def checkout(request):
 
 
 # ==============================================================================
-# VENDOR STORE CRUD
+# VENDOR STORE CRUD & REVIEWS VIEW
 # ==============================================================================
 
 
 @login_required
 def vendor_dashboard(request):
-    """List storefronts and inventory items owned by requesting vendor."""
+    """List storefronts owned by requesting vendor."""
     if not check_is_vendor(request.user):
         return HttpResponseForbidden("Access restricted to Vendors.")
-    stores = request.user.stores.all().prefetch_related("products")
+    stores = request.user.stores.all()
     return render(
         request,
         "eCommerce/vendor_dashboard.html",
         {"stores": stores, "is_vendor": True},
+    )
+
+
+@login_required
+def vendor_reviews(request):
+    """Aggregated list of all reviews across all vendor products."""
+    if not check_is_vendor(request.user):
+        return HttpResponseForbidden("Access restricted to Vendors.")
+    vendor_stores = request.user.stores.all()
+    reviews = (
+        Review.objects.filter(product__store__in=vendor_stores)
+        .select_related("product", "product__store", "user")
+        .order_by("-created_at")
+    )
+    return render(
+        request,
+        "eCommerce/vendor_reviews.html",
+        {"reviews": reviews, "is_vendor": True},
     )
 
 
@@ -308,7 +348,7 @@ def add_product(request, store_id):
             price=price,
             stock=stock,
         )
-        return redirect("eCommerce:vendor_dashboard")
+        return redirect("eCommerce:store_products", store_id=store.id)
     return render(
         request,
         "eCommerce/product_form.html",
@@ -328,7 +368,7 @@ def edit_product(request, product_id):
         product.price = Decimal(request.POST.get("price"))
         product.stock = int(request.POST.get("stock"))
         product.save()
-        return redirect("eCommerce:vendor_dashboard")
+        return redirect("eCommerce:store_products", store_id=product.store.id)
     return render(
         request,
         "eCommerce/product_form.html",
@@ -347,17 +387,19 @@ def delete_product(request, product_id):
     product = get_object_or_404(
         Product, id=product_id, store__vendor=request.user
     )
+    store_id = product.store.id
     if request.method == "POST":
         product.delete()
-        return redirect("eCommerce:vendor_dashboard")
+        return redirect("eCommerce:store_products", store_id=store_id)
     return render(
         request,
         "eCommerce/confirm_delete.html",
         {"item": product, "type": "Product", "is_vendor": True},
     )
 
+
 # ==============================================================================
-# REST API ENDPOINTS (M06T07 TASK 1)
+# REST API ENDPOINTS & REDDIT FEED
 # ==============================================================================
 
 
@@ -381,6 +423,7 @@ def api_stores_list(request):
             serializer.save(vendor=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(["GET"])
 def api_vendor_stores(request, vendor_id):
@@ -437,7 +480,13 @@ def api_store_reviews(request, store_id):
     serializer = ReviewSerializer(reviews, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 def reddit_feed(request):
     """Fetch posts from Reddit and pass them to the template."""
     posts = get_reddit_posts("python")
-    return render(request, "eCommerce/reddit_feed.html", {"posts": posts})
+    is_vendor = check_is_vendor(request.user)
+    return render(
+        request,
+        "eCommerce/reddit_feed.html",
+        {"posts": posts, "is_vendor": is_vendor},
+    )

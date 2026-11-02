@@ -42,7 +42,7 @@ Before you begin, ensure you have met the following requirements:
    Clone the repository to your local machine and navigate into the project directory:
 
    ```bash
-   git clone <YOUR_GITHUB_REPOSITORY_URL>
+   git clone https://github.com/arianmalayery-studio/eCommerce_App.git
    cd AuthLog
    ```
 

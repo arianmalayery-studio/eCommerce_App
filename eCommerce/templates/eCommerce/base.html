@@ -7,29 +7,38 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; line-height: 1.6; background-color: #f8fafc; color: #1e293b; }
         .navbar { background-color: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 14px 30px; display: flex; justify-content: space-between; align-items: center; }
         .nav-brand { font-size: 1.25rem; font-weight: bold; text-decoration: none; color: #0f172a; }
-        .nav-links { display: flex; align-items: center; gap: 12px; }
-        .user-tag { font-size: 0.9rem; padding: 4px 10px; border-radius: 9999px; font-weight: bold; }
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+        .user-tag { font-size: 0.85rem; padding: 4px 10px; border-radius: 9999px; font-weight: bold; }
         .role-vendor { background-color: #ede9fe; color: #6d28d9; }
         .role-buyer { background-color: #e0f2fe; color: #0369a1; }
-        .btn { padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; font-size: 0.9rem; }
+        .btn { padding: 7px 12px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; font-size: 0.85rem; }
         .btn-blue { background-color: #2563eb; color: white; }
+        .btn-indigo { background-color: #4f46e5; color: white; }
         .btn-amber { background-color: #f59e0b; color: white; }
         .btn-slate { background-color: #0f172a; color: white; }
         .btn-red { background-color: #dc2626; color: white; }
-        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: #334155; }
+        .container { max-width: 960px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <a href="{% url 'eCommerce:products_list' %}" class="nav-brand">🏪 Marketplace Central</a>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <a href="{% url 'eCommerce:stores_list' %}" class="nav-brand">🏪 Marketplace Central</a>
+            <a href="{% url 'eCommerce:stores_list' %}" class="btn btn-outline">Stores</a>
+            <a href="{% url 'eCommerce:products_list' %}" class="btn btn-outline">All Products</a>
+            <a href="{% url 'eCommerce:reddit_feed' %}" class="btn btn-outline">🌐 Reddit Feed</a>
+        </div>
+
         <div class="nav-links">
             {% if request.user.is_authenticated %}
                 <span>👤 <strong>{{ request.user.username }}</strong></span>
                 {% if is_vendor %}
                     <span class="user-tag role-vendor">🏬 Vendor</span>
-                    <a href="{% url 'eCommerce:vendor_dashboard' %}" class="btn btn-slate">Dashboard</a>
+                    <a href="{% url 'eCommerce:vendor_dashboard' %}" class="btn btn-slate">My Stores</a>
+                    <a href="{% url 'eCommerce:vendor_reviews' %}" class="btn btn-indigo">⭐ Reviews</a>
                 {% else %}
                     <span class="user-tag role-buyer">🛍️ Buyer</span>
                     <a href="{% url 'eCommerce:main_cart_page' %}" class="btn btn-amber">🛒 Cart</a>

@@ -1,0 +1,40 @@
+{% extends "eCommerce/base.html" %}
+
+{% block title %}Stores Directory - Marketplace Central{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+        <h2 style="margin: 0;">Storefronts Directory</h2>
+        <p style="margin: 4px 0 0; color: #64748b;">Select a storefront below to browse only its products.</p>
+    </div>
+    {% if is_vendor %}
+        <a href="{% url 'eCommerce:create_store' %}" class="btn btn-blue">+ Create New Store</a>
+    {% endif %}
+</div>
+
+{% if stores %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+        {% for store in stores %}
+            <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h3 style="margin-top: 0; margin-bottom: 6px; color: #0f172a;">{{ store.name }}</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-top: 0;">Vendor: <strong>{{ store.vendor.username }}</strong></p>
+                    <p style="color: #475569; font-size: 0.95rem;">
+                        {{ store.description|default:"No description provided." }}
+                    </p>
+                </div>
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+                    <a href="{% url 'eCommerce:store_products' store.id %}" class="btn btn-blue" style="width: 100%; text-align: center; box-sizing: border-box;">
+                        View Store Products &rarr;
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card">
+        <p style="color: #64748b; margin: 0;">No stores currently available.</p>
+    </div>
+{% endif %}
+{% endblock %}
