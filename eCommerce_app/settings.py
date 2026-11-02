@@ -46,7 +46,7 @@ MIDDLEWARE = [
 ]
 
 # Root URL configuration points to the main urls.py
-ROOT_URLCONF = "AuthLog.urls"
+ROOT_URLCONF = "eCommerce_app.urls"
 
 # Templates settings to tell Django where your HTML files are and how to process them
 TEMPLATES = [
