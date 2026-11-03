@@ -1,0 +1,54 @@
+{% extends "eCommerce/base.html" %}
+
+{% block title %}{{ store.name }} - Products{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'eCommerce:stores_list' %}" style="color: #2563eb; text-decoration: none;">&larr; Back to all stores</a></p>
+
+<div class="card" style="margin-bottom: 24px; border-left: 4px solid #2563eb;">
+    <h2 style="margin: 0 0 6px;">{{ store.name }}</h2>
+    <p style="margin: 0; color: #64748b;">Operated by: <strong>{{ store.vendor.username }}</strong></p>
+    {% if store.description %}
+        <p style="margin-top: 10px; margin-bottom: 0; color: #475569;">{{ store.description }}</p>
+    {% endif %}
+    {% if request.user == store.vendor %}
+        <div style="margin-top: 14px;">
+            <a href="{% url 'eCommerce:add_product' store.id %}" class="btn btn-blue">+ Add Product to this Store</a>
+        </div>
+    {% endif %}
+</div>
+
+<h3>Store Inventory</h3>
+
+{% if products %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px;">
+        {% for product in products %}
+            <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h4 style="margin: 0 0 8px;"><a href="{% url 'eCommerce:product_page' product.id %}" style="color: #0f172a; text-decoration: none;">{{ product.name }}</a></h4>
+                    <p style="margin: 0 0 10px; color: #64748b; font-size: 0.9rem;">{{ product.description|truncatewords:15 }}</p>
+                    <p style="font-size: 1.15rem; font-weight: bold; color: #047857; margin: 0;">${{ product.price }}</p>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0;">Stock: {{ product.stock }}</p>
+                </div>
+
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px;">
+                    <a href="{% url 'eCommerce:product_page' product.id %}" class="btn btn-outline" style="flex: 1; text-align: center;">Details</a>
+                    {% if request.user == store.vendor %}
+                        <a href="{% url 'eCommerce:edit_product' product.id %}" class="btn btn-slate">Edit</a>
+                    {% elif not is_vendor %}
+                        <form action="{% url 'eCommerce:add_to_cart' product.id %}" method="POST" style="margin: 0; flex: 1;">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-amber" style="width: 100%;">Add to Cart</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card">
+        <p style="color: #64748b; margin: 0;">This store has no products listed yet.</p>
+    </div>
+{% endif %}
+{% endblock %}
