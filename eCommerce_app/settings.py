@@ -65,7 +65,7 @@ TEMPLATES = [
 ]
 
 # WSGI application: Entry point for WSGI-compatible web servers
-WSGI_APPLICATION = "AuthLog.wsgi.application"
+WSGI_APPLICATION = "eCommerce_app.wsgi.application"
 
 # Database settings: Using MySQL here with your database credentials
 DATABASES = {
