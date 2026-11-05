@@ -41,9 +41,7 @@ def login_user(request):
 
 
 def register_user(request):
-    """Register users with dual password confirmation and unique email
-    validation.
-    """
+    """Register users with password confirmation and unique email validation."""
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         email = request.POST.get("email", "").strip()
@@ -179,7 +177,9 @@ def reset_user_password(request, token):
         request.session["user_id"] = user_token.user.id
         request.session["reset_token"] = token
         return render(
-            request, "grabsomore/password_reset.html", {"token": token}
+            request,
+            "grabsomore/password_reset.html",
+            {"token": token},
         )
     except ResetToken.DoesNotExist:
         return render(request, "grabsomore/password_reset_invalid.html")
@@ -217,10 +217,7 @@ def reset_password(request):
 
             if reset_token.expiry_date < timezone.now():
                 reset_token.delete()
-                return render(
-                    request,
-                    "grabsomore/password_reset_expired.html"
-                )
+                return render(request, "grabsomore/password_reset_expired.html")
 
             user.set_password(password)
             user.save()

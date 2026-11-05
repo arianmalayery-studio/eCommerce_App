@@ -213,8 +213,7 @@ def checkout(request):
                 price_at_purchase=product.price,
             )
             invoice_lines.append(
-                f"- {product.name} (x{qty}) @ "
-                f"${product.price} =${line_total}"
+                f"- {product.name} (x{qty}) @ " f"${product.price} =${line_total}"
             )
 
     order.total_amount = total
@@ -286,9 +285,8 @@ def create_store(request):
     if request.method == "POST":
         name = request.POST.get("name")
         description = request.POST.get("description", "")
-        Store.objects.create(
-            vendor=request.user, name=name, description=description
-        )
+        Store.objects.create(vendor=request.user,
+                             name=name, description=description)
         return redirect("eCommerce:vendor_dashboard")
     return render(
         request,
@@ -360,8 +358,7 @@ def add_product(request, store_id):
 def edit_product(request, product_id):
     """Edit existing product details owned by requesting vendor."""
     product = get_object_or_404(
-        Product, id=product_id, store__vendor=request.user
-    )
+        Product, id=product_id, store__vendor=request.user)
     if request.method == "POST":
         product.name = request.POST.get("name")
         product.description = request.POST.get("description", "")
@@ -385,8 +382,7 @@ def edit_product(request, product_id):
 def delete_product(request, product_id):
     """Remove product item owned by requesting vendor."""
     product = get_object_or_404(
-        Product, id=product_id, store__vendor=request.user
-    )
+        Product, id=product_id, store__vendor=request.user)
     store_id = product.store.id
     if request.method == "POST":
         product.delete()
@@ -416,6 +412,12 @@ def api_stores_list(request):
             return Response(
                 {"error": "Authentication credentials were not provided."},
                 status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not check_is_vendor(request.user):
+            return Response(
+                {"error": ("Forbidden: Only registered vendors can create stores.")},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         serializer = StoreSerializer(data=request.data)

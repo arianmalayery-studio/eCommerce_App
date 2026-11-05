@@ -29,20 +29,23 @@ INSTALLED_APPS = [
     "django.contrib.sessions",  # Session framework
     "django.contrib.messages",  # Message framework
     "django.contrib.staticfiles",  # Manage static files like CSS and JS
-    'rest_framework', # DRF
+    "rest_framework",  # DRF
     "grabsomore",  # Your custom app for auth
     "eCommerce",  # Your custom app for eCommerce
 ]
 
-# Middleware are layers that process requests/responses, like security and session management
+# Middleware are layers that process requests/responses,
+# like security and session management
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",  # Protects against CSRF attacks
-    "django.contrib.auth.middleware.AuthenticationMiddleware",  # Adds user info to requests
+    # Adds user info to requests
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",  # Prevents clickjacking attacks
+    # Prevents clickjacking attacks
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # Root URL configuration points to the main urls.py
@@ -52,13 +55,19 @@ ROOT_URLCONF = "eCommerce_app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],  # You can add folders here if you keep templates outside apps
-        "APP_DIRS": True,  # Tells Django to look for templates inside each app’s 'templates' folder
+        # You can add folders here if you keep templates outside apps
+        "DIRS": [],
+        # Tells Django to look for templates
+        # inside each app’s 'templates' folder
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.request",  # Adds 'request' object to templates
-                "django.contrib.auth.context_processors.auth",  # Adds user info to templates
-                "django.contrib.messages.context_processors.messages",  # Add message framework to templates
+                # Adds 'request' object to templates
+                "django.template.context_processors.request",
+                # Adds user info to templates
+                "django.contrib.auth.context_processors.auth",
+                # Add message framework to templates
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
@@ -80,18 +89,30 @@ DATABASES = {
 }
 
 # Password validation helps make sure passwords are strong and safe
-AUTH_PASSWORD_VALIDATORS = [
+AAUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
     },
 ]
 
@@ -108,15 +129,18 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Email settings to send emails (for example, password reset emails)
-# You can switch to console backend for testing emails in your terminal instead of sending real emails
+# You can switch to console backend for testing emails
+# in your terminal instead of sending real emails
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 EMAIL_BACKEND = (
-    "django.core.mail.backends.smtp.EmailBackend"  # Use SMTP server to send real emails
+    # Use SMTP server to send real emails
+    "django.core.mail.backends.smtp.EmailBackend"
 )
 EMAIL_FILE_PATH = "/emails/"  # Path to save emails if using file backend
 EMAIL_HOST = "smtp.gmail.com"  # Gmail SMTP server
 EMAIL_PORT = 587  # SMTP port for TLS
 EMAIL_USE_TLS = True  # Use TLS for security
-EMAIL_HOST_USER = "arian.malayery@gmail.com"  # Your email address used to send mails
+# Your email address used to send mails
+EMAIL_HOST_USER = "arian.malayery@gmail.com"
 EMAIL_HOST_PASSWORD = "your_app_password"  # Your email password or app password

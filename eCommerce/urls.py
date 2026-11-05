@@ -9,7 +9,9 @@ urlpatterns = [
     # Tiered Entry Points: Stores first, then store-specific products
     path("", views.stores_list, name="stores_list"),
     path("stores/", views.stores_list, name="stores"),
-    path("stores/<int:store_id>/products/", views.store_products, name="store_products"),
+    path(
+        "stores/<int:store_id>/products/", views.store_products, name="store_products"
+    ),
     path("all-products/", views.products_list, name="products_list"),
     path("product/<int:product_id>/", views.product_page, name="product_page"),
     path(
@@ -17,7 +19,6 @@ urlpatterns = [
         views.add_review,
         name="add_review",
     ),
-
     # Cart & Checkout
     path("cart/", views.main_cart_page, name="main_cart_page"),
     path("cart/add/<int:product_id>/", views.add_to_cart, name="add_to_cart"),
@@ -32,7 +33,6 @@ urlpatterns = [
         name="remove_from_cart",
     ),
     path("checkout/", views.checkout, name="checkout"),
-
     # Vendor Operations
     path("dashboard/", views.vendor_dashboard, name="vendor_dashboard"),
     path("vendor/reviews/", views.vendor_reviews, name="vendor_reviews"),
@@ -62,13 +62,23 @@ urlpatterns = [
         views.delete_product,
         name="delete_product",
     ),
-
     # API Endpoints
     path("api/stores/", views.api_stores_list, name="api_stores_list"),
-    path("api/vendors/<int:vendor_id>/stores/", views.api_vendor_stores, name="api_vendor_stores"),
-    path("api/stores/<int:store_id>/products/", views.api_store_products, name="api_store_products"),
-    path("api/stores/<int:store_id>/reviews/", views.api_store_reviews, name="api_store_reviews"),
-
+    path(
+        "api/vendors/<int:vendor_id>/stores/",
+        views.api_vendor_stores,
+        name="api_vendor_stores",
+    ),
+    path(
+        "api/stores/<int:store_id>/products/",
+        views.api_store_products,
+        name="api_store_products",
+    ),
+    path(
+        "api/stores/<int:store_id>/reviews/",
+        views.api_store_reviews,
+        name="api_store_reviews",
+    ),
     # Reddit Feed
     path("reddit/", views.reddit_feed, name="reddit_feed"),
 ]
