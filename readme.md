@@ -234,3 +234,15 @@ eCommerce_app/
 ├── requirements.txt         # Project dependencies (including mysqlclient)
 └── readme.md                # Project documentation
 ```
+
+## 🌟 Key Engineering & Architectural Highlights
+
+This project was built to demonstrate production-grade Django engineering patterns, clean architectural separation, and strict adherence to code standards:
+
+- **Decoupled REST API Architecture (`api/v1/`)**: RESTful endpoints are cleanly isolated from server-rendered HTML views. API controller logic lives in `eCommerce/api_views.py`, and endpoint routing is encapsulated within `eCommerce/api_urls.py`, mounted under the versioned prefix `/api/v1/`.
+- **Role-Based Access Control (RBAC)**: Distinct permissions separate **Buyers** and **Vendors**. Vendors manage storefronts and inventory but are restricted from buyer checkout workflows. Buyers can browse, add to cart, and checkout, but are blocked with `HTTP 403 Forbidden` if attempting vendor administrative actions or store creation.
+- **Protected Cross-Store Reviews & Basic Authentication**: Vendor store review aggregates (`/api/v1/stores/<id>/reviews/`) require HTTP Basic Authentication and verify storefront ownership, preventing cross-tenant data tampering.
+- **Verified Purchase Review Engine**: Review submissions dynamically inspect relational database purchase histories (`OrderItem` linked to user orders) to flag feedback as `is_verified`.
+- **Third-Party Integration**: Live external developer discussion feeds are integrated directly via the Reddit API.
+- **Strict Code Standards**: The entire repository complies 100% with PEP 8 standards enforced via `.flake8` (88-char max line length, 79-char docstrings, clean imports, zero dead code).
+- **Comprehensive Documentation**: Complete OpenAPI-style API specifications and visual database lifecycle workflows are provided in the `/Planning` directory.

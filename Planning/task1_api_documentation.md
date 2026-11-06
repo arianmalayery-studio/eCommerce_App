@@ -6,11 +6,12 @@ This document outlines the API specifications, architectural constraints, and in
 
 ## 1. Architectural Principles & Data Representations
 
-The API is built using the **Django REST Framework (DRF)** adhering to RESTful architecture constraints:
+The API is built using the **Django REST Framework (DRF)** adhering to RESTful architecture constraints and modular design patterns:
+* **Decoupled API Architecture:** All REST API controllers are decoupled from server-rendered HTML template views and isolated into `eCommerce/api_views.py`. Endpoint routing is encapsulated in `eCommerce/api_urls.py` under the versioned namespace prefix `/api/v1/`.
 * **Statelessness:** No client session state is stored on the server between API requests. Each request carries all necessary authentication headers and data payloads.
-* **Uniform Interface & Resource Identification:** Resources (`stores`, `products`, `reviews`) are addressed via clear, predictable URIs.
+* **Uniform Interface & Resource Identification:** Resources (`stores`, `products`, `reviews`) are addressed via predictable, versioned URIs (`/api/v1/...`).
 * **Payload Representation:** JSON (JavaScript Object Notation) is used as the primary interchange format for all request bodies and response payloads.
-* **Authentication & Permissions:** Sensitive vendor operations require HTTP Basic Authentication (`BasicAuthentication`) and an authenticated user session (`IsAuthenticated`). Store ownership checks ensure vendors can only modify their own resources. Role checks ensure that only vendors and superusers can create storefronts.
+* **Authentication & Permissions:** Sensitive vendor operations require HTTP Basic Authentication (`BasicAuthentication`) and an authenticated user session (`IsAuthenticated`). Store ownership checks ensure vendors can only modify their own resources. Role-based access control (RBAC) ensures only registered vendors and superusers can create storefronts.
 
 ---
 
@@ -26,21 +27,21 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 
 ## 3. API Endpoints Overview
 
-| Method | Endpoint | Authorization | Description |
-| :--- | :--- | :--- | :--- |
-| **GET** | `/ecommerce/api/stores/` | Public | List all storefronts |
-| **POST** | `/ecommerce/api/stores/` | Vendor Only (`403` for Buyers) | Create a new storefront |
-| **GET** | `/ecommerce/api/vendors/<vendor_id>/stores/` | Public | List stores owned by a specific vendor |
-| **GET** | `/ecommerce/api/stores/<store_id>/products/` | Public | Retrieve all products belonging to a store |
-| **POST** | `/ecommerce/api/stores/<store_id>/products/` | Store Owner Only | Add a new product to a store |
-| **GET** | `/ecommerce/api/stores/<store_id>/reviews/` | Store Owner Only | View all reviews for a store's products |
+| Method | Endpoint | Namespace / Pattern Name | Authorization | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/api/v1/stores/` | `ecommerce_api_v1:stores_list` | Public | List all storefronts |
+| **POST** | `/api/v1/stores/` | `ecommerce_api_v1:stores_list` | Vendor Only (`403` for Buyers) | Create a new storefront |
+| **GET** | `/api/v1/vendors/<vendor_id>/stores/` | `ecommerce_api_v1:vendor_stores` | Public | List stores owned by a specific vendor |
+| **GET** | `/api/v1/stores/<store_id>/products/` | `ecommerce_api_v1:store_products` | Public | Retrieve all products belonging to a store |
+| **POST** | `/api/v1/stores/<store_id>/products/` | `ecommerce_api_v1:store_products` | Store Owner Only | Add a new product to a store |
+| **GET** | `/api/v1/stores/<store_id>/reviews/` | `ecommerce_api_v1:store_reviews` | Store Owner Only | View all reviews for a store's products |
 
 ---
 
 ## 4. Endpoint Specifications
 
 ### 4.1 List All Stores
-* **Endpoint:** `GET /ecommerce/api/stores/`
+* **Endpoint:** `GET /api/v1/stores/`
 * **Access Level:** Public
 * **Response `200 OK`:**
 ```json
@@ -58,7 +59,7 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 ---
 
 ### 4.2 Create Store
-* **Endpoint:** `POST /ecommerce/api/stores/`
+* **Endpoint:** `POST /api/v1/stores/`
 * **Access Level:** Authenticated Vendor (`Vendors` group or Superuser)
 * **Headers:** `Content-Type: application/json`, `Authorization: Basic <credentials>`
 * **Request Payload:**
@@ -102,7 +103,7 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 ---
 
 ### 4.3 List Stores by Vendor
-* **Endpoint:** `GET /ecommerce/api/vendors/<vendor_id>/stores/`
+* **Endpoint:** `GET /api/v1/vendors/<vendor_id>/stores/`
 * **Access Level:** Public
 * **Response `200 OK`:**
 ```json
@@ -120,7 +121,7 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 ---
 
 ### 4.4 List Store Products
-* **Endpoint:** `GET /ecommerce/api/stores/<store_id>/products/`
+* **Endpoint:** `GET /api/v1/stores/<store_id>/products/`
 * **Access Level:** Public
 * **Response `200 OK`:**
 ```json
@@ -139,7 +140,7 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 ---
 
 ### 4.5 Add Product to Store
-* **Endpoint:** `POST /ecommerce/api/stores/<store_id>/products/`
+* **Endpoint:** `POST /api/v1/stores/<store_id>/products/`
 * **Access Level:** Authenticated Store Owner Only
 * **Headers:** `Content-Type: application/json`, `Authorization: Basic <credentials>`
 * **Request Payload:**
@@ -186,7 +187,7 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 ---
 
 ### 4.6 Retrieve Store Reviews
-* **Endpoint:** `GET /ecommerce/api/stores/<store_id>/reviews/`
+* **Endpoint:** `GET /api/v1/stores/<store_id>/reviews/`
 * **Access Level:** Authenticated Store Owner Only (`BasicAuthentication` + `IsAuthenticated`)
 * **Headers:** `Authorization: Basic <credentials>`
 * **Response `200 OK`:**
@@ -224,13 +225,15 @@ The API is built using the **Django REST Framework (DRF)** adhering to RESTful a
 sequenceDiagram
     autonumber
     actor Client as Client / Postman
-    participant Endpoint as Django REST API Endpoint
-    participant Auth as Auth & Permission Layer
+    participant Router as API v1 Router (eCommerce.api_urls)
+    participant Endpoint as API View Module (eCommerce.api_views)
+    participant Auth as Auth & RBAC Guard
     participant Serializer as DRF Serializer
     participant DB as MariaDB Database
 
     Note over Client,DB: Flow 1: Create Store (Role-Restricted)
-    Client->>Endpoint: POST /ecommerce/api/stores/ (Basic Auth + JSON)
+    Client->>Router: POST /api/v1/stores/ (Basic Auth + JSON)
+    Router->>Endpoint: Route to api_stores_list
     Endpoint->>Auth: Verify user.is_authenticated & check_is_vendor()
     alt Not Vendor / Buyer Role
         Auth-->>Client: 403 Forbidden {"error": "Only vendors can create stores"}
@@ -242,14 +245,16 @@ sequenceDiagram
     end
 
     Note over Client,DB: Flow 2: Retrieve Store Products (Public)
-    Client->>Endpoint: GET /ecommerce/api/stores/{store_id}/products/
+    Client->>Router: GET /api/v1/stores/{store_id}/products/
+    Router->>Endpoint: Route to api_store_products
     Endpoint->>DB: SELECT * FROM eCommerce_product WHERE store_id = {store_id}
     DB-->>Endpoint: Product QuerySet
     Endpoint->>Serializer: Serialize QuerySet (ProductSerializer)
     Serializer-->>Client: 200 OK (Product List JSON)
 
     Note over Client,DB: Flow 3: Add Product to Store (Store Owner Only)
-    Client->>Endpoint: POST /ecommerce/api/stores/{store_id}/products/ (Auth + JSON)
+    Client->>Router: POST /api/v1/stores/{store_id}/products/ (Auth + JSON)
+    Router->>Endpoint: Route to api_store_products
     Endpoint->>Auth: Check if request.user == store.vendor
     alt User is NOT store owner
         Auth-->>Client: 403 Forbidden {"error": "Permission denied"}
@@ -261,7 +266,8 @@ sequenceDiagram
     end
 
     Note over Client,DB: Flow 4: Retrieve Store Reviews (Vendor Only)
-    Client->>Endpoint: GET /ecommerce/api/stores/{store_id}/reviews/ (Basic Auth)
+    Client->>Router: GET /api/v1/stores/{store_id}/reviews/ (Basic Auth)
+    Router->>Endpoint: Route to api_store_reviews
     Endpoint->>Auth: Verify BasicAuthentication & check request.user == store.vendor
     alt Not Store Owner
         Auth-->>Client: 403 Forbidden
