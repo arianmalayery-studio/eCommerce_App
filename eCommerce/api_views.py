@@ -12,16 +12,16 @@ from rest_framework.decorators import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Product, ProductReview, Store
+from .models import Product, Review, Store
 from .serializers import (
-    ProductReviewSerializer,
     ProductSerializer,
+    ReviewSerializer,
     StoreSerializer,
 )
 
 
 def check_is_vendor(user):
-    """Check if the authenticated user belongs to the Vendors group or is staff."""
+    """Check if the user belongs to the Vendors group or is staff."""
     if not user or not user.is_authenticated:
         return False
     return user.is_staff or user.groups.filter(name="Vendors").exists()
@@ -44,7 +44,11 @@ def api_stores_list(request):
 
         if not check_is_vendor(request.user):
             return Response(
-                {"error": "Forbidden: Only registered vendors can create stores."},
+                {
+                    "error": (
+                        "Forbidden: Only registered vendors can create stores."
+                    )
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -66,7 +70,7 @@ def api_vendor_stores(request, vendor_id):
 
 @api_view(["GET", "POST"])
 def api_store_products(request, store_id):
-    """List products of a store (public) or add a product (store owner only)."""
+    """List products of a store or add a product (store owner only)."""
     store = get_object_or_404(Store, id=store_id)
 
     if request.method == "GET":
@@ -107,6 +111,6 @@ def api_store_reviews(request, store_id):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    reviews = ProductReview.objects.filter(product__store=store)
-    serializer = ProductReviewSerializer(reviews, many=True)
+    reviews = Review.objects.filter(product__store=store)
+    serializer = ReviewSerializer(reviews, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

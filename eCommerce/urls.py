@@ -1,4 +1,4 @@
-"""URL routing configuration for eCommerce storefront and vendor tools."""
+"""URL Configuration for the eCommerce catalog, cart, and vendor portal."""
 
 from django.urls import path
 from . import views
@@ -6,22 +6,32 @@ from . import views
 app_name = "eCommerce"
 
 urlpatterns = [
-    # Tiered Entry Points: Stores first, then store-specific products
-    path("", views.stores_list, name="stores_list"),
-    path("stores/", views.stores_list, name="stores"),
+    # Catalog browsing
+    path("", views.products_list, name="products_list"),
+    path("all-products/", views.products_list, name="all_products"),
+    path("stores/", views.stores_list, name="stores_list"),
     path(
-        "stores/<int:store_id>/products/", views.store_products, name="store_products"
+        "stores/<int:store_id>/",
+        views.store_products,
+        name="store_products",
     ),
-    path("all-products/", views.products_list, name="products_list"),
-    path("product/<int:product_id>/", views.product_page, name="product_page"),
+    path(
+        "product/<int:product_id>/",
+        views.product_page,
+        name="product_page",
+    ),
     path(
         "product/<int:product_id>/review/",
         views.add_review,
         name="add_review",
     ),
-    # Cart & Checkout
+    # Shopping cart & checkout
     path("cart/", views.main_cart_page, name="main_cart_page"),
-    path("cart/add/<int:product_id>/", views.add_to_cart, name="add_to_cart"),
+    path(
+        "cart/add/<int:product_id>/",
+        views.add_to_cart,
+        name="add_to_cart",
+    ),
     path(
         "cart/update/<int:product_id>/",
         views.update_cart_item,
@@ -33,10 +43,14 @@ urlpatterns = [
         name="remove_from_cart",
     ),
     path("checkout/", views.checkout, name="checkout"),
-    # Vendor Operations
-    path("dashboard/", views.vendor_dashboard, name="vendor_dashboard"),
+    # Vendor dashboard & store management
+    path(
+        "vendor/dashboard/",
+        views.vendor_dashboard,
+        name="vendor_dashboard",
+    ),
     path("vendor/reviews/", views.vendor_reviews, name="vendor_reviews"),
-    path("store/new/", views.create_store, name="create_store"),
+    path("store/create/", views.create_store, name="create_store"),
     path(
         "store/<int:store_id>/edit/",
         views.edit_store,
@@ -47,8 +61,9 @@ urlpatterns = [
         views.delete_store,
         name="delete_store",
     ),
+    # Vendor product management
     path(
-        "store/<int:store_id>/product/new/",
+        "store/<int:store_id>/product/add/",
         views.add_product,
         name="add_product",
     ),
@@ -62,4 +77,6 @@ urlpatterns = [
         views.delete_product,
         name="delete_product",
     ),
+    # Third-party integration
+    path("reddit-feed/", views.reddit_feed, name="reddit_feed"),
 ]
