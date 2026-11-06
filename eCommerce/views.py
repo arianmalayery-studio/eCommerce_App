@@ -9,17 +9,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .functions.reddit import get_reddit_posts
 from .models import Order, OrderItem, Product, Review, Store
-from .serializers import ProductSerializer, ReviewSerializer, StoreSerializer
-
-from rest_framework import status
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-)
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 
 def check_is_vendor(user):
@@ -213,7 +202,8 @@ def checkout(request):
                 price_at_purchase=product.price,
             )
             invoice_lines.append(
-                f"- {product.name} (x{qty}) @ " f"${product.price} =${line_total}"
+                f"- {product.name} (x{qty}) @ "
+                f"${product.price} =${line_total}"
             )
 
     order.total_amount = total
@@ -285,8 +275,9 @@ def create_store(request):
     if request.method == "POST":
         name = request.POST.get("name")
         description = request.POST.get("description", "")
-        Store.objects.create(vendor=request.user,
-                             name=name, description=description)
+        Store.objects.create(
+            vendor=request.user, name=name, description=description
+        )
         return redirect("eCommerce:vendor_dashboard")
     return render(
         request,
@@ -358,7 +349,8 @@ def add_product(request, store_id):
 def edit_product(request, product_id):
     """Edit existing product details owned by requesting vendor."""
     product = get_object_or_404(
-        Product, id=product_id, store__vendor=request.user)
+        Product, id=product_id, store__vendor=request.user
+    )
     if request.method == "POST":
         product.name = request.POST.get("name")
         product.description = request.POST.get("description", "")
@@ -382,7 +374,8 @@ def edit_product(request, product_id):
 def delete_product(request, product_id):
     """Remove product item owned by requesting vendor."""
     product = get_object_or_404(
-        Product, id=product_id, store__vendor=request.user)
+        Product, id=product_id, store__vendor=request.user
+    )
     store_id = product.store.id
     if request.method == "POST":
         product.delete()
@@ -395,92 +388,8 @@ def delete_product(request, product_id):
 
 
 # ==============================================================================
-# REST API ENDPOINTS & REDDIT FEED
+# THIRD-PARTY INTEGRATIONS
 # ==============================================================================
-
-
-@api_view(["GET", "POST"])
-def api_stores_list(request):
-    """List all stores (GET) or allow authenticated vendors to create a store (POST)."""
-    if request.method == "GET":
-        stores = Store.objects.all()
-        serializer = StoreSerializer(stores, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    elif request.method == "POST":
-        if not request.user.is_authenticated:
-            return Response(
-                {"error": "Authentication credentials were not provided."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        if not check_is_vendor(request.user):
-            return Response(
-                {"error": ("Forbidden: Only registered vendors can create stores.")},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = StoreSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(vendor=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["GET"])
-def api_vendor_stores(request, vendor_id):
-    """Retrieve all stores owned by a specific vendor."""
-    stores = Store.objects.filter(vendor_id=vendor_id)
-    serializer = StoreSerializer(stores, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(["GET", "POST"])
-def api_store_products(request, store_id):
-    """Retrieve products of a store (GET) or add a product to a store (POST)."""
-    store = get_object_or_404(Store, pk=store_id)
-
-    if request.method == "GET":
-        products = Product.objects.filter(store=store)
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    elif request.method == "POST":
-        if not request.user.is_authenticated:
-            return Response(
-                {"error": "Authentication required to add products."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        if store.vendor != request.user:
-            return Response(
-                {"error": "You do not have permission to modify this store."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(store=store)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["GET"])
-@authentication_classes([BasicAuthentication])
-@permission_classes([IsAuthenticated])
-def api_store_reviews(request, store_id):
-    """Allow vendors to retrieve reviews for products belonging to their store."""
-    store = get_object_or_404(Store, pk=store_id)
-
-    if store.vendor != request.user:
-        return Response(
-            {"error": "Forbidden: You are not the owner of this store."},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
-    reviews = Review.objects.filter(product__store=store)
-    serializer = ReviewSerializer(reviews, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 def reddit_feed(request):

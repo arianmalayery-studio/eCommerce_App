@@ -62,23 +62,4 @@ urlpatterns = [
         views.delete_product,
         name="delete_product",
     ),
-    # API Endpoints
-    path("api/stores/", views.api_stores_list, name="api_stores_list"),
-    path(
-        "api/vendors/<int:vendor_id>/stores/",
-        views.api_vendor_stores,
-        name="api_vendor_stores",
-    ),
-    path(
-        "api/stores/<int:store_id>/products/",
-        views.api_store_products,
-        name="api_store_products",
-    ),
-    path(
-        "api/stores/<int:store_id>/reviews/",
-        views.api_store_reviews,
-        name="api_store_reviews",
-    ),
-    # Reddit Feed
-    path("reddit/", views.reddit_feed, name="reddit_feed"),
 ]
